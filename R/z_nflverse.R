@@ -7,7 +7,7 @@ scrape_players_to_release <- function(){
 
   players <- purrr::map_dfr(
     seasons,
-    purrr::possibly(~pff_players)
+    purrr::possibly(pff_players, otherwise = data.frame())
   ) |>
     dplyr::group_by(pff_id) |>
     tidyr::fill(-c(age,season), .direction = "downup") |>
@@ -17,6 +17,6 @@ scrape_players_to_release <- function(){
     data_frame = players,
     file_name = "pff_players",
     nflverse_type = "pff_players",
-    release_tag = "pff"
+    release_tag = "pff_players"
   )
 }
