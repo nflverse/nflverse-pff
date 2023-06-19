@@ -23,3 +23,5 @@ Imports:
   tidyr
 Remotes:
   nflversedata=nflverse/nflverse-data
+URL: https://github.com/nflverse/nflversepff
+BugReports: https://github.com/nflverse/nflversepff/issues
