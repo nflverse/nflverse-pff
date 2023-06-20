@@ -4,12 +4,14 @@
 \alias{pff_players}
 \title{Get Players}
 \usage{
-pff_players(season, league = "nfl")
+pff_players(season, league = "nfl", ...)
 }
 \arguments{
 \item{season}{season to retrieve}
 
 \item{league}{one of \code{c('nfl', 'ncaa')}, defaults to nfl}
+
+\item{...}{parameters to pass to the \code{httr::GET()} request}
 }
 \description{
 Collects only bio/roster info, use template to create grades function if desired

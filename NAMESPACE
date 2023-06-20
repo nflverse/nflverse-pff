@@ -3,4 +3,5 @@
 export(.api_request)
 export(.pff_request)
 export(pff_players)
+export(pff_teams)
 export(scrape_players_to_release)

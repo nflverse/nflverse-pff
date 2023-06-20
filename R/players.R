@@ -4,53 +4,65 @@
 #'
 #' @param season season to retrieve
 #' @param league one of `c('nfl', 'ncaa')`, defaults to nfl
+#' @param ... parameters to pass to the `httr::GET()` request
 #'
 #' @export
-pff_players <- function(season, league = "nfl"){
+pff_players <- function(season, league = "nfl", ...){
 
   stopifnot(
     season <= nflreadr::get_current_season(roster = TRUE),
     league %in% c("nfl", "ncaa")
   )
 
-  pos_grid <- expand.grid(
+  season_grid <- expand.grid(
     season = season,
-    position = c('QB', 'WR', 'HB', 'FB', 'TE', 'C', 'G', 'T', 'CB', 'S', 'LB', 'DI', 'ED', 'K', 'P'),
     league = league
   )
 
+  teams <- purrr::pmap_dfr(
+    season_grid,
+    purrr::possibly(pff_teams, otherwise = "data.frame"),
+    .progress = glue::glue("Retrieving team IDs for {nrow(season_grid)} seasons")
+  ) |>
+    dplyr::select(season, team_id, league)
+
   out <- purrr::pmap_dfr(
-    pos_grid,
-    purrr::possibly(.pff_players_by_position, otherwise = data.frame(), quiet = FALSE)
+    teams,
+    purrr::possibly(.pff_players_by_team, otherwise = data.frame()),
+    .progress = glue::glue("Retrieving players for {nrow(teams)} teams")
   )
+
   return(out)
 }
 
-.pff_players_by_position <- function(season, position, league = "nfl") {
+.pff_players_by_team <- function(season, team_id, league = "nfl") {
+
   stopifnot(
     season <= nflreadr::get_current_season(roster = TRUE),
-    position %in% c('QB', 'WR', 'HB', 'FB', 'TE', 'C', 'G', 'T', 'CB', 'S', 'LB', 'DI', 'ED', 'K', 'P'),
+    !is.na(as.numeric(team_id)),
     league %in% c("nfl", "ncaa")
   )
 
   req <- .pff_request(
-    endpoint = "nfl/grades",
-    query = list(league = league, season = season, position = position)
+    endpoint = glue::glue("teams/{team_id}/roster"),
+    query = list(league = league, season = season)
   )
 
   out <- req |>
-    getElement("players") |>
-    tidyr::unpack(cols = dplyr::where(is.data.frame),names_sep = "_") |>
-    dplyr::mutate(season = season) |>
+    getElement("team_players") |>
+    tidyr::unpack(cols = dplyr::where(is.data.frame), names_sep = "_") |>
+    dplyr::mutate(season = .env$season,
+                  league = .env$league,
+                  dplyr::across(dplyr::where(is.character), ~dplyr::na_if(.x, ""))) |>
     dplyr::select(
       dplyr::any_of(
         c(
           "season",
           "position",
-          "pff_id" = "id",
-          "name",
+          "player_id" = "id",
+          "player_name" = "name",
           "age",
-          "franchise_id",
+          "team_id" = "franchise_id",
           "team_name",
           "team_slug",
           "status",
@@ -61,7 +73,8 @@ pff_players <- function(season, league = "nfl"){
           "slug"
         )
       ),
-      dplyr::starts_with("draft")
+      dplyr::starts_with("draft"),
+      "league"
     )
 
   return(out)
