@@ -16,7 +16,7 @@ scrape_players_to_release <- function(){
   nflversedata::nflverse_save(
     data_frame = players,
     file_name = "pff_players",
-    nflverse_type = "pff_players",
-    release_tag = "pff_players"
+    nflverse_type = "players_components",
+    release_tag = "players_components"
   )
 }
