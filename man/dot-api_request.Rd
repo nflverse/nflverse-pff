@@ -11,7 +11,8 @@
   user_agent = getOption("nflversepff.user_agent"),
   retry_delay = 1L,
   retry_times = 3L,
-  log_url = url
+  log_url = url,
+  verbose = getOption("nflversepff.verbose", FALSE)
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ this is passed to \code{httr::RETRY()}. Defaults to \code{"GET"}}
 \item{retry_times}{Maximum number of attempts. Defaults to \code{3}.}
 
 \item{log_url}{url for print logging, defaults to \code{url}}
+
+\item{verbose}{whether to print out URLs, default = FALSE}
 }
 \description{
 Formats api request to the PFF API with retry

@@ -5,10 +5,7 @@ scrape_players_to_release <- function(){
 
   seasons <- nflreadr::get_current_season(roster = TRUE):2016
 
-  players <- purrr::map_dfr(
-    seasons,
-    purrr::possibly(pff_players, otherwise = data.frame())
-  ) |>
+  players <- pff_players(season = seasons, league = "nfl") |>
     dplyr::group_by(pff_id) |>
     tidyr::fill(-c(age,season), .direction = "downup") |>
     dplyr::ungroup()
